@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\RabotaMdParsingCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -14,17 +15,21 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         //
+        RabotaMdParsingCommand::class,
     ];
 
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('rabota-md:parse-jobs')
+            ->dailyAt('9:00')
+            ->pingBefore(config('rabota-md.all_vacansies_url'))
+            ->sendOutputTo('storage/logs/rabota-md');
     }
 
     /**
@@ -34,8 +39,14 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
+    }
+
+
+    public function scheduleTimezone(): string
+    {
+        return 'Europe/Chisinau';
     }
 }
